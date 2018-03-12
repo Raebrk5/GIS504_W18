@@ -1,0 +1,168 @@
+//
+
+//  ViewController.swift
+
+//  Tutorial
+
+//
+
+//  Created by Brandee Knight on 3/11/18.
+
+//  Copyright © 2018 Brandee Knight. All rights reserved.
+
+//
+
+
+
+import UIKit
+
+import MapKit
+
+class ViewController: UIViewController, MKMapViewDelegate,CLLocationManagerDelegate {
+
+
+
+    @IBOutlet weak var mapKitView: MKMapView!
+
+    let locationManager = CLLocationManager ()
+
+    override func viewDidLoad() {
+
+        super.viewDidLoad()
+
+        
+
+        mapKitView.delegate = self
+
+        mapKitView.showsCompass = true
+
+        mapKitView.showsScale = true
+
+        mapKitView.showsPointsOfInterest = true
+
+        mapKitView.showsUserLocation = true
+
+        
+
+        locationManager.requestAlwaysAuthorization()
+
+        locationManager.requestWhenInUseAuthorization()
+
+        
+
+        if CLLocationManager.locationServicesEnabled(){
+
+            
+
+            locationManager.delegate = self
+
+            locationManager.desiredAccuracy = kCLLocationAccuracyBest
+
+            locationManager.startUpdatingLocation()
+
+        }
+
+        let sourceCoordiantes = locationManager.location?.coordinate
+
+        let destCoordinates = CLLocationCoordinate2D (latitude: 60.498600, longitude: -151.087761)
+
+        
+
+        let sourcePlacemark = MKPlacemark(coordinate: sourceCoordiantes!)
+
+        let destPlacemark = MKPlacemark(coordinate: destCoordinates)
+
+        
+
+        let sourceItem = MKMapItem(placemark: sourcePlacemark)
+
+        let destItem = MKMapItem(placemark: destPlacemark)
+
+        
+
+        let directionRequest = MKDirectionsRequest()
+
+        directionRequest.source = sourceItem
+
+        directionRequest.destination = destItem
+
+        directionRequest.transportType = .walking
+
+        
+
+        
+
+        let direction = MKDirections(request: directionRequest)
+
+        direction.calculate(completionHandler: {
+
+            response, error in
+
+            
+
+            guard let response = response else {
+
+                if let error = error {
+
+                    print ("something went wrong")
+
+                }
+
+                return
+
+            }
+
+            
+
+            let route = response.routes[0]
+
+            self.mapKitView.add (route.polyline, level: .aboveRoads)
+
+            
+
+            let rekt = route.polyline.boundingMapRect
+
+            self.mapKitView.setRegion(MKCoordinateRegionForMapRect(rekt), animated: true)
+
+            
+
+        })
+
+        
+
+        
+
+        
+
+    }
+
+    func mapView(_ mapView:MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+
+        let renderer = MKPolylineRenderer(overlay: overlay)
+
+        renderer.strokeColor = UIColor.purple
+
+        renderer.lineWidth = 7.0
+
+        
+
+        return renderer
+
+    }
+
+
+
+    override func didReceiveMemoryWarning() {
+
+        super.didReceiveMemoryWarning()
+
+        // Dispose of any resources that can be recreated.
+
+    }
+
+
+
+
+
+}
+
